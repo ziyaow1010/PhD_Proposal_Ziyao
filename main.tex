@@ -6,6 +6,8 @@
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{wrapfig}
+\usepackage{placeins}
+\usepackage{needspace}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
@@ -400,10 +402,13 @@ Aster also improves the physical consistency of reconstructed environments. Comp
 
 To evaluate whether the reconstructed environments support embodied learning, we generated robotic manipulation data in Aster worlds and trained policies using these data. The evaluation included Pick \& Place, Dish Stacking, and Object Pushing tasks across three reconstructed simulation scenes. We fine-tuned $\pi_{0.5}$ policies using 100 synthetic demonstrations for each task and evaluated their performance in both Aster-generated environments and the corresponding ground-truth simulation scenes. The results showed similar policy performance across the two environments, with an average absolute task success rate difference of only 3.7 percentage points. This demonstrates that Aster preserves the scene structure and object interactions required for robotic policy learning.
 
+% Finish earlier floating Aster figures and keep this wrapped figure on one page.
+\FloatBarrier
+\Needspace{0.58\textheight}
 \begin{wrapfigure}{r}{0.55\textwidth}
     \centering
     \includegraphics[width=\linewidth]{Figures/real.pdf}
-    \caption{Real-world robotic evaluation of Aster. A real workspace is reconstructed into simulation, where additional manipulation data are generated to improve policy training and real-robot task performance.}
+    \caption{Real-world evaluation of Aster. The reconstructed workspace supports simulation-based robotic training.}
     \label{fig:aster_robot}
 \end{wrapfigure}
 
@@ -448,10 +453,13 @@ A key component of the proposed system is the continuous improvement of robotic 
 
 To address this challenge, I propose to construct a digital twin of each edge device's operating environment, providing a simulation environment where the agent can learn, test, and improve skills before executing them on the physical robot. Building on Aster, real-world observations collected by the robot will be used to reconstruct a simulation-ready environment with relevant scene geometry, individual objects, and estimated physical properties. Reconstruction and physics simulation need not run on the resource-constrained robot itself: they may run on a connected workstation or other available computing resource, while the robot performs local sensing and control. This provides each robot with an environment-specific virtual testing space rather than relying solely on general-purpose simulation scenes.
 
+% Do not let pending full-width figures conflict with the wrapped diagram.
+\FloatBarrier
+\Needspace{0.58\textheight}
 \begin{wrapfigure}{l}{0.55\textwidth}
     \centering
     \includegraphics[width=\linewidth]{Figures/embodied_data.pdf}
-    \caption{Proposed simulation-based learning and validation framework for edge robots. Real-world observations are used to construct a local digital twin. The agent explores and learns initial skills in simulation, while subsequent skill updates are evaluated using simulated task success and execution efficiency before deployment to the physical robot.}
+    \caption{Digital twin-assisted skill learning and validation. Candidate skills are tested in simulation before physical deployment.}
     \label{fig:embodied_data}
 \end{wrapfigure}
 
