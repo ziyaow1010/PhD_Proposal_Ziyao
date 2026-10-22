@@ -5,6 +5,7 @@
 \usepackage{lmodern}
 \usepackage{microtype}
 \usepackage{graphicx}
+\usepackage{wrapfig}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
@@ -377,14 +378,14 @@ Aster also improves the physical consistency of reconstructed environments. Comp
 
 To evaluate whether the reconstructed environments support embodied learning, we generated robotic manipulation data in Aster worlds and trained policies using these data. The evaluation included Pick \& Place, Dish Stacking, and Object Pushing tasks across three reconstructed simulation scenes. We fine-tuned $\pi_{0.5}$ policies using 100 synthetic demonstrations for each task and evaluated their performance in both Aster-generated environments and the corresponding ground-truth simulation scenes. The results showed similar policy performance across the two environments, with an average absolute task success rate difference of only 3.7 percentage points. This demonstrates that Aster preserves the scene structure and object interactions required for robotic policy learning.
 
-We further evaluated Aster in a real robotic manipulation setting using a UFACTORY xArm 850. We first recorded a video of the real workspace and reconstructed it into a simulation environment using Aster. Based on this environment, we automatically generated 200 synthetic training episodes. We then compared a policy trained using 50 real-world demonstrations against another policy trained using the same 50 real demonstrations together with the 200 Aster-generated episodes. In the easier evaluation setting, both policies achieved an 80\% success rate. However, in the more challenging setting, the policy trained only on real data failed all six trials, while the policy trained with additional Aster data succeeded in four out of six trials. This small real-robot case study suggests that Aster-generated data can improve performance in some challenging tasks, motivating broader real-world evaluation.
-
-\begin{figure}[t]
+\begin{wrapfigure}{r}{0.55\textwidth}
     \centering
-    \includegraphics[width=0.95\linewidth]{Figures/real.pdf}
+    \includegraphics[width=\linewidth]{Figures/real.pdf}
     \caption{Real-world robotic evaluation of Aster. A real workspace is reconstructed into simulation, where additional manipulation data are generated to improve policy training and real-robot task performance.}
     \label{fig:aster_robot}
-\end{figure}
+\end{wrapfigure}
+
+We further evaluated Aster in a real robotic manipulation setting using a UFACTORY xArm 850. We first recorded a video of the real workspace and reconstructed it into a simulation environment using Aster. Based on this environment, we automatically generated 200 synthetic training episodes. We then compared a policy trained using 50 real-world demonstrations against another policy trained using the same 50 real demonstrations together with the 200 Aster-generated episodes. In the easier evaluation setting, both policies achieved an 80\% success rate. However, in the more challenging setting, the policy trained only on real data failed all six trials, while the policy trained with additional Aster data succeeded in four out of six trials. This small real-robot case study suggests that Aster-generated data can improve performance in some challenging tasks, motivating broader real-world evaluation.
 
 Overall, Aster provides an efficient approach to transforming real-world scenes into simulation environments for embodied AI training and evaluation. Unlike conventional reconstruction methods, Aster focuses on recovering the scene structure, individual objects, and physical properties required for robotic interaction. Its ability to construct simulation-ready worlds from real observations enables the generation of additional training data without requiring extensive physical robot operations.
 
@@ -425,12 +426,12 @@ A key component of the proposed system is the continuous improvement of robotic 
 
 To address this challenge, I propose to construct a digital twin of each edge device's operating environment, providing a simulation environment where the agent can learn, test, and improve skills before executing them on the physical robot. Building on Aster, real-world observations collected by the robot will be used to reconstruct a simulation-ready environment with relevant scene geometry, individual objects, and estimated physical properties. Reconstruction and physics simulation need not run on the resource-constrained robot itself: they may run on a connected workstation or other available computing resource, while the robot performs local sensing and control. This provides each robot with an environment-specific virtual testing space rather than relying solely on general-purpose simulation scenes.
 
-\begin{figure}[t]
+\begin{wrapfigure}{l}{0.55\textwidth}
     \centering
-    \includegraphics[width=0.95\linewidth]{Figures/embodied_data.pdf}
+    \includegraphics[width=\linewidth]{Figures/embodied_data.pdf}
     \caption{Proposed simulation-based learning and validation framework for edge robots. Real-world observations are used to construct a local digital twin. The agent explores and learns initial skills in simulation, while subsequent skill updates are evaluated using simulated task success and execution efficiency before deployment to the physical robot.}
     \label{fig:embodied_data}
-\end{figure}
+\end{wrapfigure}
 
 The first application of the digital twin is initial skill learning in a new environment. When a robot is deployed, it may encounter objects, spatial constraints, and manipulation tasks that differ from those in its existing skill library. Instead of directly exploring these unfamiliar tasks on the physical robot, the system will first generate corresponding tasks in the reconstructed simulation environment. The VLM-based agent can then interact with the digital twin through the same skill and waypoint interfaces used for real-world execution. By observing the outcomes of different action sequences, the agent can identify feasible strategies and improve its initial skills before deploying them on the physical robot. This process aims to reduce the number of physical trials required when adapting to a new environment.
 
