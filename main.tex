@@ -5,9 +5,7 @@
 \usepackage{lmodern}
 \usepackage{microtype}
 \usepackage{graphicx}
-\usepackage{wrapfig}
 \usepackage{placeins}
-\usepackage{needspace}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
@@ -402,23 +400,21 @@ Aster also improves the physical consistency of reconstructed environments. Comp
 
 To evaluate whether the reconstructed environments support embodied learning, we generated robotic manipulation data in Aster worlds and trained policies using these data. The evaluation included Pick \& Place, Dish Stacking, and Object Pushing tasks across three reconstructed simulation scenes. We fine-tuned $\pi_{0.5}$ policies using 100 synthetic demonstrations for each task and evaluated their performance in both Aster-generated environments and the corresponding ground-truth simulation scenes. The results showed similar policy performance across the two environments, with an average absolute task success rate difference of only 3.7 percentage points. This demonstrates that Aster preserves the scene structure and object interactions required for robotic policy learning.
 
-% Finish earlier floating Aster figures and keep this wrapped figure on one page.
-\FloatBarrier
-\Needspace{0.58\textheight}
-\begin{wrapfigure}{r}{0.55\textwidth}
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\linewidth]{Figures/real.pdf}
+    \includegraphics[width=0.75\linewidth]{Figures/real.pdf}
     \caption{Real-world evaluation of Aster. The reconstructed workspace supports simulation-based robotic training.}
     \label{fig:aster_robot}
-\end{wrapfigure}
+\end{figure}
 
-We further evaluated Aster in a real robotic manipulation setting using a UFACTORY xArm 850. We first recorded a video of the real workspace and reconstructed it into a simulation environment using Aster. Based on this environment, we automatically generated 200 synthetic training episodes. We then compared a policy trained using 50 real-world demonstrations against another policy trained using the same 50 real demonstrations together with the 200 Aster-generated episodes. In the easier evaluation setting, both policies achieved an 80\% success rate. However, in the more challenging setting, the policy trained only on real data failed all six trials, while the policy trained with additional Aster data succeeded in four out of six trials. This small real-robot case study suggests that Aster-generated data can improve performance in some challenging tasks, motivating broader real-world evaluation.
+Figure~\ref{fig:aster_robot} presents our real-world evaluation of Aster using a UFACTORY xArm 850. We first recorded a video of the real workspace and reconstructed it into a simulation environment using Aster. Based on this environment, we automatically generated 200 synthetic training episodes. We then compared a policy trained using 50 real-world demonstrations against another policy trained using the same 50 real demonstrations together with the 200 Aster-generated episodes. In the easier evaluation setting, both policies achieved an 80\% success rate. However, in the more challenging setting, the policy trained only on real data failed all six trials, while the policy trained with additional Aster data succeeded in four out of six trials. This small real-robot case study suggests that Aster-generated data can improve performance in some challenging tasks, motivating broader real-world evaluation.
 
 Overall, Aster provides an efficient approach to transforming real-world scenes into simulation environments for embodied AI training and evaluation. Unlike conventional reconstruction methods, Aster focuses on recovering the scene structure, individual objects, and physical properties required for robotic interaction. Its ability to construct simulation-ready worlds from real observations enables the generation of additional training data without requiring extensive physical robot operations.
 
 For my proposed collaborative embodied AI system, Aster provides an important foundation for developing domain-specific data and improving robotic capabilities in local environments. Edge robots operate in different physical environments, and their local data are essential for understanding the tasks and objects they encounter. Aster provides a potential way to reconstruct these environments and generate additional task-specific interaction data through simulation. Such data can support the development and evaluation of local skills, particularly when real-world task executions are expensive or limited. Combined with the proposed VLM-based agents and edge--server collaboration, this capability can help each edge device improve its skills using experience from its own environment while reducing the need for repeated physical data collection. Extending this approach into a continuous local learning process will be an important direction of my proposed research.
 
 
+\FloatBarrier
 \section{Proposed Research}
 \label{sec:proposed}
 
@@ -453,17 +449,14 @@ A key component of the proposed system is the continuous improvement of robotic 
 
 To address this challenge, I propose to construct a digital twin of each edge device's operating environment, providing a simulation environment where the agent can learn, test, and improve skills before executing them on the physical robot. Building on Aster, real-world observations collected by the robot will be used to reconstruct a simulation-ready environment with relevant scene geometry, individual objects, and estimated physical properties. Reconstruction and physics simulation need not run on the resource-constrained robot itself: they may run on a connected workstation or other available computing resource, while the robot performs local sensing and control. This provides each robot with an environment-specific virtual testing space rather than relying solely on general-purpose simulation scenes.
 
-% Do not let pending full-width figures conflict with the wrapped diagram.
-\FloatBarrier
-\Needspace{0.58\textheight}
-\begin{wrapfigure}{l}{0.55\textwidth}
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\linewidth]{Figures/embodied_data.pdf}
+    \includegraphics[width=0.72\linewidth]{Figures/embodied_data.pdf}
     \caption{Digital twin-assisted skill learning and validation. Candidate skills are tested in simulation before physical deployment.}
     \label{fig:embodied_data}
-\end{wrapfigure}
+\end{figure}
 
-The first application of the digital twin is initial skill learning in a new environment. When a robot is deployed, it may encounter objects, spatial constraints, and manipulation tasks that differ from those in its existing skill library. Instead of directly exploring these unfamiliar tasks on the physical robot, the system will first generate corresponding tasks in the reconstructed simulation environment. The VLM-based agent can then interact with the digital twin through the same skill and waypoint interfaces used for real-world execution. By observing the outcomes of different action sequences, the agent can identify feasible strategies and improve its initial skills before deploying them on the physical robot. This process aims to reduce the number of physical trials required when adapting to a new environment.
+As illustrated in Figure~\ref{fig:embodied_data}, the first application of the digital twin is initial skill learning in a new environment. When a robot is deployed, it may encounter objects, spatial constraints, and manipulation tasks that differ from those in its existing skill library. Instead of directly exploring these unfamiliar tasks on the physical robot, the system will first generate corresponding tasks in the reconstructed simulation environment. The VLM-based agent can then interact with the digital twin through the same skill and waypoint interfaces used for real-world execution. By observing the outcomes of different action sequences, the agent can identify feasible strategies and improve its initial skills before deploying them on the physical robot. This process aims to reduce the number of physical trials required when adapting to a new environment.
 
 The second application is the validation of local skill updates. During real-world operation, the agent will collect execution feedback and identify skills that require improvement. For example, a skill may repeatedly fail to grasp an object or require unnecessary movements to complete a task. The agent can propose modifications to the skill based on previous execution records. However, directly applying these modifications to the physical robot may introduce new failures or safety risks. Therefore, I plan to use the digital twin to evaluate proposed updates before real-world deployment. The system will execute both the existing and updated skills across multiple simulated trials and compare their performance using metrics such as task success rate, execution time, and execution failures. Updates that demonstrate sufficient improvement and satisfy predefined validation criteria can then be tested on the physical robot. If an update does not meet these requirements, the agent can continue improving it in simulation without affecting the currently deployed skill.
 
@@ -471,6 +464,7 @@ An important research challenge is ensuring that skills evaluated in the digital
 
 The digital twin will therefore serve as an intermediate environment between skill learning and physical execution. It will support initial adaptation when a robot enters a new environment and provide a controlled testing environment for subsequent skill updates. Real-world execution will remain necessary to validate the effectiveness of simulated improvements, but simulation can reduce the number of physical trials and provide additional information before deployment. Through this approach, the proposed system aims to make continuous local skill improvement more practical while reducing the cost and risks associated with real-world robotic exploration.
 
+\FloatBarrier
 \subsection{Self-Improving Foundation Model Agents}
 \label{subsec:fm_agents}
 
@@ -504,7 +498,7 @@ Through this research, I aim to extend the current VLM-based robotic agent from 
 
 The proposed self-improving agents can continuously improve their skills using experience collected in local environments. However, these improvements are primarily designed for individual robots and may not generalize to other devices. For example, a manipulation strategy developed for a particular object or workspace may be useful for similar tasks in other environments, while some local modifications may only work under specific physical conditions. If each robot learns independently, useful experience cannot be shared across devices. On the other hand, directly combining all local updates may introduce conflicts between different skills and reduce overall performance. Therefore, an important research challenge is determining how locally learned knowledge can contribute to improving the central VLM and shared skill library.
 
-To address this challenge, I propose an agent-based edge--cloud collaboration framework that allows multiple robots to share and improve their learned capabilities. The framework builds on the local skill improvement process described in Section~\ref{subsec:fm_agents}. Each edge device maintains its own skill library and evaluates skill performance using local execution feedback and its digital twin. The central server collects selected skill updates and evaluation summaries, identifies knowledge that may be useful across different environments, and incorporates validated improvements into the shared system. The main goal is to improve the shared knowledge available to the central VLM while allowing individual devices to retain skills adapted to their own environments.
+To address this challenge, I propose an agent-based edge--cloud collaboration framework that allows multiple robots to share and improve their learned capabilities. The framework builds on the local skill improvement process described in Section~\ref{subsec:fm_agents}. Each edge device maintains its own skill library and evaluates skill performance using local execution feedback and its digital twin. As illustrated in Figure~\ref{fig:edge_cloud_collaboration}, the central server collects selected skill updates and evaluation summaries, identifies knowledge that may be useful across different environments, and incorporates validated improvements into the shared system. The main goal is to improve the shared knowledge available to the central VLM while allowing individual devices to retain skills adapted to their own environments.
 
 One challenge is that different devices may have different tasks and evaluation objectives. For example, one robot may prioritize task success when manipulating fragile objects, while another may emphasize execution speed for repetitive operations. Inspired by my previous research on federated multi-objective RL~\cite{fedmoa2026}, I plan to use multiple reward signals to evaluate local skills. These rewards will primarily reflect task success, execution efficiency, and execution failures. Each device can evaluate its skills using the objectives relevant to its environment, while task success provides a common measure for comparing similar skills across devices. This approach allows the collaboration process to account for differences in local requirements rather than treating all skill updates as equally useful.
 
