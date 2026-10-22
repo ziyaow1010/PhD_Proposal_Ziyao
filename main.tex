@@ -1,14 +1,588 @@
-\documentclass{article}
-\usepackage{graphicx} % Required for inserting images
+\documentclass[11pt]{article}
 
-\title{PhD_Proposal_Ziyao}
-\author{Ziyao Wang}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{multirow}
+
+\title{Collaborative Foundation Model System\\
+for Embodied AI on the Edge}
+\author{Ziyao Wang\\
+Department of Electrical and Computer Engineering\\
+University of Maryland, College Park\\[0.3em]
+Advisor: Ang Li}
 \date{October 2026}
 
 \begin{document}
 
 \maketitle
 
+\begin{abstract}
+Foundation models offer a promising path toward embodied intelligence,
+extending AI from virtual environments into the physical world.
+However, operating these models on real-world devices introduces
+challenges in on-device training and deployment, data privacy, and
+edge--cloud collaboration. Addressing these challenges requires
+systems that connect the capabilities of foundation models with the
+resource constraints and evolving demands of embodied interaction.
+
+My research investigates collaborative training, collaborative
+inference, and foundation-model agents, with the goal of enabling
+efficient and adaptable embodied intelligence. My completed work
+spans federated learning for large models, collaborative decoding,
+edge--cloud model collaboration, and data engines for embodied AI.
+These efforts establish a foundation for learning from distributed
+data, coordinating models with different capabilities, and supporting
+embodied learning through data collection and processing.
+
+Building on this foundation, I propose to develop a collaborative
+machine learning system that enables generalizable, self-evolving
+embodied intelligence while minimizing computation on edge devices.
+The proposed research will pursue three connected directions.
+First, I will investigate embodied training data, including how
+interaction data can be collected, curated, and used to support
+generalization across tasks and environments.
+Second, I will develop foundation-model agents that integrate
+perception, reasoning, and action, and improve through accumulated
+experience and feedback.
+Third, I will explore agent-based edge--cloud collaboration that
+dynamically coordinates local execution and cloud assistance
+according to task requirements and resource availability.
+The system will be evaluated in terms of task performance,
+generalization to unseen tasks and environments, improvement through
+experience, and computational and communication costs.
+This research aims to establish system principles and mechanisms
+for bringing capable, adaptable embodied AI to resource-constrained
+devices.
+\end{abstract}
+
+
 \section{Introduction}
+\label{sec:introduction}
+
+Foundation models (FMs) have become one of the most important research directions in machine learning and machine learning systems in recent years. Their strong generalization and adaptation capabilities have driven rapid progress in AI research and applications. FMs have achieved remarkable success in language, image, and video understanding and generation. Building on these advances, researchers are increasingly exploring how to extend FMs from digital tasks to the physical world. This has led to growing interest in embodied AI, which aims to enable AI systems to understand physical environments and control robots to perform real-world tasks.
+
+However, developing practical FM systems for embodied AI introduces new challenges due to their close connection with the physical world and robot hardware. These challenges can be divided into two main aspects. First, embodied AI is inherently an edge system, where AI models need to run on robots or edge computing devices connected to robots, understand the robots' operating environments in real time, and respond quickly to changes. Since edge devices often have limited computational resources, efficiently serving embodied FMs requires addressing challenges in collaborative training, edge--cloud collaboration, and model efficiency. Second, embodied FMs, such as vision-language-action models (VLAs) and world action models (WAMs), still have limited generalization capabilities, largely due to the lack of large-scale training data compared to language and image models. Addressing this limitation requires either developing more capable FMs or enabling efficient adaptation to specific tasks and environments. In edge settings, this motivates on-device learning and continuous model improvement using data collected from real-world interactions. Such approaches require domain-specific data that reflects the actual operating environments, as well as privacy-preserving training methods that allow FMs to improve without exposing private data collected on edge devices.
+
+During my PhD research, I have explored collaborative FM systems from multiple perspectives, with a focus on efficient training, inference, and deployment on resource-constrained devices. For collaborative training, I developed FLoRA, a federated fine-tuning framework for large language models using low-rank adaptation (LoRA). FLoRA addresses two key challenges in federated LoRA: heterogeneous LoRA ranks across devices and aggregation errors in conventional methods. We proposed a stacking-based aggregation method to support heterogeneous LoRA training without introducing aggregation errors. For collaborative inference, I investigated how multiple models can work together to improve performance and efficiency. In Prada, I studied edge--cloud model collaboration, where a smaller model is fine-tuned on private edge data to improve the performance of a larger server-side FM. In Speculate, then Collaborate (CoSD), I developed an efficient collaborative decoding method that combines the knowledge of models with different strengths during inference. Additionally, I developed UniCompress, a token compression method for unified vision-language understanding and generation, to reduce computational costs and support FM deployment under limited edge resources.
+
+Building on these studies, my recent research has shifted toward embodied AI, with the goal of developing collaborative FM systems for real-world robotic applications. In Aster, I investigated how to efficiently collect and process real-world data on edge devices, including 3D reconstruction and the development of data pipelines for embodied AI training. Together, my previous work has provided me with experience in collaborative training, efficient inference, edge--cloud collaboration, and embodied data processing. These efforts have also helped me identify the key components and research challenges involved in building a complete collaborative embodied AI system. Based on this foundation, my proposed research aims to bring these components together into a unified system that supports efficient deployment, continuous learning, and adaptation to real-world environments.
+
+I propose to develop an agent-based embodied AI system that does not rely on VLAs or WAMs. The system consists of a central server and multiple edge devices. The central server hosts a vision-language model (VLM) that can understand language instructions and visual inputs and control robots through a set of predefined skills and a knowledge base. Each edge device communicates with the central VLM through an API to obtain instructions for executing local tasks. Meanwhile, each edge device maintains its own skill library, which is designed to efficiently handle tasks in its specific environment. By combining the general capabilities of the central VLM with domain-specific skills on edge devices, the system aims to support a wide range of robotic tasks without requiring a large embodied FM to run locally. The system begins with training the central VLM using large-scale robotic data and developing its knowledge base and skill library. The goal is to enable the VLM to understand robotic tasks, interpret physical environments through RGB-D images, and select appropriate skills to control robots. Once the central VLM is ready, edge devices can use its API to complete tasks in their local environments. During task execution, each edge device collects feedback on task success, failure, and execution time. Based on this feedback, the VLM acts as an agent to develop and improve skills for the local environment. These skills are stored in the local skill library and can be reused for future tasks. Through this process, each edge device gradually develops domain-specific skills and improves its performance in its own environment. In addition to local improvement, the system supports collaborative learning between the central server and edge devices. The server periodically reviews the skills developed by different edge devices and identifies those that can be generalized across tasks and environments. These skills are then used to update the central skill library and further improve the central VLM through training. The updated VLM and shared skills can subsequently benefit other edge devices, while each device continues to develop skills for its own environment. In this way, local experience contributes to the improvement of the central system, and improvements at the server can support future learning and task execution on edge devices. This creates a continuous learning process in which the central VLM and local skill libraries improve together through real-world robotic experience.
+
+To develop this system, my thesis will investigate three main research questions. The first question is how to build a VLM-based embodied AI agent that can perform robotic tasks without relying on VLAs or WAMs. My approach is to use RGB-D cameras and predefined skills to obtain the positions and poses of objects, while using the VLM for task understanding, object selection, and skill selection. Instead of relying on a VLA or WAM to generate multi-step robot motion plans, the agent will control the robot through a small number of target poses and corresponding skills. This approach aims to simplify robot control while taking advantage of the VLM's language and visual understanding capabilities. The second question is how to enable self-improvement on edge devices. I plan to explore recursive self-improvement (RSI), where an agent analyzes successful and failed task executions and uses the results to improve its local skills. The system will monitor task success rates, execution time, and other performance metrics to determine when skills should be updated, which skills need improvement, and how much they should be changed. Through this process, each edge device can continuously improve its skills based on experience in its local environment. The third question is how to enable collaborative improvement between edge devices and the central server. I plan to investigate an approach combining federated learning and reinforcement learning (RL), where the server uses rewards collected from different edge devices to guide the improvement of its VLM and skill library. The main challenges include selecting which local skills should be shared, choosing which devices should participate, and determining when and how to update the central model. These decisions must consider both the performance improvements achieved on individual devices and the generalization of the central VLM across different tasks and environments. The goal is to enable continuous improvement of the central system without sacrificing its generalization capabilities. Among these three research directions, I have conducted preliminary experiments to validate the feasibility of the VLM-based agentic approach. The remaining two directions, focusing on local self-improvement and edge--server collaborative learning, will be further investigated during the remainder of my PhD research.
+
+The remainder of this proposal is organized as follows. Section 2 introduces the background and motivation for collaborative FMs and embodied AI on the edge. Section 3 presents my preliminary research on collaborative training, efficient inference, edge--cloud model collaboration, and embodied AI data systems. Section 4 describes the proposed research directions and the overall system design. Finally, Section 5 presents the research timeline, expected contributions, and conclusions.
+
+\section{Background and Motivation}
+\label{sec:background}
+
+\subsection{Collaborative Foundation Models}
+\label{subsec:collaborative_fm}
+
+\subsection{Embodied AI on the Edge}
+\label{subsec:embodied_edge}
+
+
+\section{Preliminary Research}
+\label{sec:preliminary}
+
+\subsection{Collaborative Foundation Model Training}
+\label{subsec:flora}
+
+FL enables distributed clients to collaboratively fine-tune FMs using their local data without directly sharing the data with a central server. However, fine-tuning large models on edge devices introduces significant computational and communication challenges, especially when clients have different computational resources and data distributions. LoRA reduces the cost of fine-tuning by introducing two trainable low-rank matrices while keeping the pre-trained model parameters frozen. Combining FL with LoRA allows distributed clients to efficiently fine-tune large models using their local data.
+
+Existing federated LoRA methods, such as FedIT, face two major challenges. First, these methods independently average the two LoRA matrices from different clients. However, the product of the averaged matrices is not equal to the average of their products, introducing aggregation errors into the global model update. Such errors can reduce fine-tuning performance and slow down convergence. Second, conventional aggregation requires all participating clients to use the same LoRA rank. In practice, clients have different computational resources and data distributions, making heterogeneous LoRA ranks necessary for efficient federated fine-tuning. To address these challenges, I developed FLoRA, a federated fine-tuning framework that enables accurate aggregation of heterogeneous LoRA adapters through a stacking-based method.
+
+LoRA represents the update of a pre-trained weight matrix $W \in \mathbb{R}^{m \times n}$ using two low-rank matrices $A \in \mathbb{R}^{r \times n}$ and $B \in \mathbb{R}^{m \times r}$, where $r \ll \min(m,n)$. The fine-tuned weight matrix is expressed as
+\begin{equation}
+W' = W + \Delta W = W + BA.
+\label{eq:flora_lora}
+\end{equation}
+In federated fine-tuning, the expected global model update is the weighted sum of local updates:
+\begin{equation}
+\Delta W = \sum_{k=1}^{K} p_k B_k A_k,
+\label{eq:flora_expected}
+\end{equation}
+where $K$ is the number of participating clients, $p_k$ is the aggregation weight of client $k$, and $A_k$ and $B_k$ are its locally trained LoRA matrices. However, FedIT independently averages $A_k$ and $B_k$, resulting in
+\begin{equation}
+\Delta W_{\mathrm{FedIT}} = \left(\sum_{k=1}^{K} p_k B_k\right)\left(\sum_{k=1}^{K} p_k A_k\right) \neq \sum_{k=1}^{K} p_k B_k A_k.
+\label{eq:flora_noise}
+\end{equation}
+This introduces additional cross-product terms between LoRA matrices from different clients, resulting in aggregation noise. Moreover, averaging LoRA matrices requires identical ranks across clients, making this approach unsuitable for heterogeneous settings.
+
+FLoRA addresses these limitations through stacking-based aggregation. Instead of independently averaging the LoRA matrices, FLoRA vertically stacks the local $A_k$ matrices and horizontally stacks the local $B_k$ matrices:
+\begin{equation}
+A = \begin{bmatrix} p_1 A_1 \\ p_2 A_2 \\ \vdots \\ p_K A_K \end{bmatrix}, \qquad B = \begin{bmatrix} B_1 & B_2 & \cdots & B_K \end{bmatrix}.
+\label{eq:flora_stacking}
+\end{equation}
+The resulting global model update is
+\begin{equation}
+\Delta W_{\mathrm{FLoRA}} = BA = \sum_{k=1}^{K} p_k B_k A_k.
+\label{eq:flora_correct}
+\end{equation}
+This operation exactly preserves the weighted sum of local model updates without introducing aggregation noise. Furthermore, stacking naturally supports heterogeneous LoRA ranks, since the global matrices have dimensions $A \in \mathbb{R}^{(\sum_{k=1}^{K}r_k) \times n}$ and $B \in \mathbb{R}^{m \times (\sum_{k=1}^{K}r_k)}$. Therefore, each client can select its LoRA rank according to its local resources and data characteristics.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/Flora_2.pdf}
+    \caption{Comparison of conventional LoRA aggregation and the stacking-based aggregation in FLoRA. Conventional averaging introduces aggregation noise, while FLoRA enables accurate aggregation with heterogeneous LoRA ranks.}
+    \label{fig:flora_aggregation}
+\end{figure}
+
+Figure~\ref{fig:flora_workflow} illustrates the overall FLoRA workflow. The server first distributes the pre-trained model to participating clients. Each client initializes and fine-tunes its local LoRA adapters using private data, with ranks selected according to available computational resources and data characteristics. After local fine-tuning, clients upload their LoRA matrices to the server, which performs stacking-based aggregation to obtain the global LoRA matrices. The aggregated matrices are then distributed back to clients for subsequent fine-tuning rounds. Throughout this process, clients keep their training data locally and only communicate LoRA parameters after model initialization.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/Flora_3.pdf}
+    \caption{Overview of FLoRA. Clients fine-tune LoRA adapters with heterogeneous ranks, and the server aggregates their updates through matrix stacking.}
+    \label{fig:flora_workflow}
+\end{figure}
+
+We evaluated FLoRA on TinyLlama-1.1B, Llama-7B, and Llama2-7B for question-answering and chat assistant tasks. The experiments used Dolly, Alpaca, Wizard, and ShareGPT for fine-tuning, with MMLU and MT-bench as evaluation benchmarks. We compared FLoRA against FedIT under homogeneous LoRA ranks and against zero-padding under heterogeneous ranks.
+
+In the homogeneous setting, all clients used the same LoRA rank of 16. FLoRA consistently outperformed FedIT across the evaluated models and tasks. For example, when fine-tuning Llama-7B on Wizard, FLoRA achieved an MT-bench score of 4.21, compared with 3.07 for FedIT. When fine-tuning TinyLlama on Dolly, FLoRA achieved 30.80\% MMLU accuracy, compared with 16.35\% for FedIT. These results demonstrate the benefits of eliminating aggregation noise.
+In the heterogeneous setting, FLoRA supported 10 clients with LoRA ranks $[64,32,16,16,8,8,4,4,4,4]$ and maintained competitive performance. In contrast, zero-padding suffered significant performance degradation. For example, when fine-tuning Llama-7B on Alpaca, FLoRA achieved 29.54\% MMLU accuracy, compared with 7.97\% for zero-padding. These results demonstrate that stacking-based aggregation can support heterogeneous clients without introducing the aggregation errors found in conventional methods.
+
+\begin{table}[t]
+\centering
+\caption{Comparison of FLoRA with baseline methods under homogeneous and heterogeneous LoRA settings.}
+\label{tab:flora_results}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{llccc}
+\hline
+Model & Setting & Method & MMLU (Dolly) & MT-bench (Wizard) \\
+\hline
+TinyLlama & Homogeneous & FedIT & 16.35 & 2.92 \\
+TinyLlama & Homogeneous & FLoRA & \textbf{30.80} & \textbf{3.13} \\
+TinyLlama & Heterogeneous & Zero-Padding & 15.76 & 1.56 \\
+TinyLlama & Heterogeneous & FLoRA & \textbf{18.45} & \textbf{3.14} \\
+\hline
+Llama & Homogeneous & FedIT & 29.67 & 3.07 \\
+Llama & Homogeneous & FLoRA & \textbf{30.99} & \textbf{4.21} \\
+Llama & Heterogeneous & Zero-Padding & 26.46 & 3.51 \\
+Llama & Heterogeneous & FLoRA & \textbf{28.50} & \textbf{4.14} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+FLoRA also maintains relatively low communication costs compared with full-model fine-tuning. Over three communication rounds, FLoRA communicated approximately 21.5\% of the parameters required by full fine-tuning, compared with 17.7\% for FedIT. Although stacking introduces additional communication overhead, it enables accurate aggregation and supports heterogeneous LoRA ranks. Overall, FLoRA provides an efficient approach to collaborative FM training across distributed edge devices with different computational resources and local datasets.
+
+
+\subsection{Collaborative Foundation Model Inference}
+\label{subsec:collaborative_inference}
+
+\subsubsection{Collaborative Decoding}
+\label{subsubsec:cosd}
+
+Different LLMs often have complementary capabilities due to differences in their training data and fine-tuning methods. For example, one model may perform better on mathematical reasoning, while another performs better on general knowledge or coding tasks. Combining the knowledge of multiple models during inference can improve overall performance without requiring additional model training. However, existing model fusion approaches often require access to model parameters or additional training, while test-time fusion methods can introduce substantial inference overhead. To address these challenges, I developed Collaborative Speculative Decoding (CoSD), an efficient decoding algorithm that combines the knowledge of multiple LLMs at inference time without modifying their parameters.
+
+CoSD builds on speculative decoding and enables two models to collaborate through token-level verification. As illustrated in Figure~\ref{fig:cosd_workflow}, CoSD consists of a draft model $M_p$ and an assistant model $M_q$. Given an input sequence, the draft model first generates $K$ tokens autoregressively. The assistant model then verifies these tokens in parallel and produces its own predictions. CoSD compares the predicted tokens and their probabilities to determine whether to accept a draft token or replace it with the assistant model's prediction. When a replacement occurs, subsequent draft tokens are discarded and regenerated based on the updated sequence. This process continues until the output is complete.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/cosd_main.pdf}
+    \caption{Overview of CoSD. The draft model generates tokens autoregressively, while the assistant model verifies them in parallel. CoSD selects between their predictions using rule-based or tree-based verification.}
+    \label{fig:cosd_workflow}
+\end{figure}
+
+The key component of CoSD is its token verification strategy. I developed two approaches: Rule-Based CoSD and Tree-Based CoSD. Rule-Based CoSD uses three conditions to determine whether a draft token should be replaced. Let $\tilde{x}_{t+i}$ and $\hat{x}_{t+i}$ denote the tokens predicted by the draft and assistant models, respectively. A draft token is replaced when
+\begin{equation}
+\begin{aligned}
+\tilde{x}_{t+i} &\neq \hat{x}_{t+i},\\
+M_p(\tilde{x}_{t+i}) &< \alpha,\\
+M_q(\hat{x}_{t+i}) &> \beta \cdot M_p(\tilde{x}_{t+i}),
+\end{aligned}
+\label{eq:cosd_rule}
+\end{equation}
+where $\alpha$ and $\beta$ are predefined thresholds. These conditions allow the assistant model to replace a draft token when the draft model has low confidence and the assistant model provides a higher-confidence alternative. Since verification only requires predicted tokens and their probabilities, CoSD does not require access to model weights or hidden states.
+
+Tree-Based CoSD replaces the predefined rules with a decision tree trained to select between the two models. The decision tree takes the probabilities of the draft and assistant tokens as inputs and predicts whether the draft token should be accepted or replaced. Training samples are constructed from input-output pairs with ground-truth responses. If the draft token matches the ground truth, the decision tree is trained to accept it. If the assistant token matches while the draft token does not, the decision tree is trained to select the assistant token. Samples where neither model predicts the correct token are excluded. This approach allows the verification strategy to adapt to specific domains with a small amount of training data, without fine-tuning either LLM.
+
+We evaluated CoSD using six pairs of LLMs across five benchmarks, including MMLU, GSM8K, HumanEval, HellaSwag, and TruthfulQA. The experiments considered four scenarios: combining models with complementary knowledge, recovering from catastrophic forgetting, collaborating between models with different capacities, and combining models with different tokenizers. We compared CoSD against conventional speculative decoding, average decoding, Co-LLM, and character-wise ensemble decoding where applicable.
+
+The results demonstrate that CoSD effectively combines the strengths of different models. For example, when combining two Mistral-7B models with complementary knowledge, Rule-Based CoSD achieved an average benchmark score of 52.41, compared with 50.79 and 50.58 for the individual models and 49.62 for average decoding. In the catastrophic forgetting recovery scenario, Rule-Based CoSD achieved an average score of 52.16, compared with 46.37 for the original model and 42.83 for the fine-tuned model. These results show that CoSD can improve overall performance by selecting predictions from models with different strengths during decoding.
+
+\begin{table}[t]
+\centering
+\caption{Performance of CoSD in complementary knowledge fusion and catastrophic forgetting recovery. Scores are averaged across five benchmarks.}
+\label{tab:cosd_results}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lcccccc}
+\hline
+Scenario & Draft & Assistant & Spec. Decoding & Avg. Decoding & CoSD-Rule & CoSD-Tree \\
+\hline
+Complementary Knowledge (Pair 1) & 50.79 & 50.58 & 46.23 & 49.62 & \textbf{52.41} & 51.24 \\
+Complementary Knowledge (Pair 2) & 47.85 & 55.77 & 53.98 & 55.09 & \textbf{56.77} & 55.74 \\
+Catastrophic Forgetting (Pair 3) & 46.37 & 42.83 & 40.87 & 45.94 & \textbf{52.16} & 49.77 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+CoSD also supports collaboration between models with different capacities and tokenizers. When combining a smaller draft model with a larger assistant model, CoSD achieved performance comparable to conventional speculative decoding while improving several individual benchmark scores. For models using different tokenizers, CoSD converts draft sequences between tokenizers before verification and achieves better results than character-wise ensemble decoding in the evaluated settings. These experiments demonstrate that CoSD can be applied to different model combinations without requiring identical model architectures or tokenizers.
+
+In addition to knowledge fusion, CoSD maintains efficient inference through parallel verification. In our latency experiments, conventional speculative decoding achieved an average token latency of 131.22 ms, while Rule-Based CoSD and Tree-Based CoSD achieved 132.31 ms and 135.82 ms, respectively. This small additional latency allows CoSD to improve knowledge fusion performance while maintaining inference efficiency. Overall, CoSD provides an efficient method for combining the capabilities of multiple FMs during inference, supporting collaborative FM systems in which models with different strengths can work together without additional model fine-tuning.
+
+\subsubsection{Edge--Cloud Model Collaboration}
+\label{subsubsec:prada}
+
+Adapting FMs to specific tasks and environments requires domain-specific training data, which is often collected and stored on edge devices. This is particularly important for embodied AI, where robots continuously collect images, videos, and interaction data from their operating environments. Such data may contain sensitive information, including the layout of private homes, personal belongings, and daily activities. Transmitting these datasets to a central server for model training can therefore introduce significant privacy concerns. At the same time, edge devices typically lack the computational resources required to fine-tune large FMs locally. Another challenge is that many powerful FMs are only accessible through APIs, meaning their parameters cannot be accessed or modified by users. These limitations motivate the development of edge--cloud collaboration methods that can adapt server-side FMs using private on-device data without transmitting the data or accessing the server model parameters.
+
+To address these challenges, I developed Prada, a black-box LLM adaptation system that uses lightweight proxy models to adapt larger server-side FMs with private on-device data. Prada addresses two main challenges: preserving both data privacy and model privacy, and enabling efficient adaptation under limited edge computational resources. Unlike conventional fine-tuning approaches, Prada does not require transferring private training datasets to the server or deploying the server model on edge devices. Instead, it uses local fine-tuning to learn domain-specific knowledge and applies this knowledge to the server model during inference.
+
+As illustrated in Figure~\ref{fig:prada_overview}, Prada consists of two main stages: offline proxy model fine-tuning and online black-box offset adaptation. In the first stage, the edge device maintains a lightweight proxy model $M_P$ and fine-tunes it using local private data with LoRA. The resulting adapted proxy model, denoted as $\hat{M}_P$, captures the knowledge learned from the local dataset. Since only the smaller proxy model is fine-tuned, this process requires significantly less computational resources than directly fine-tuning the server-side model. The original proxy model is also preserved to measure the changes introduced by local adaptation.
+
+In the second stage, Prada combines the outputs of the server-side black-box model $M_B$ with the knowledge learned by the adapted proxy model. During inference, the server produces token logits from $M_B$, while the edge device runs both $M_P$ and $\hat{M}_P$ using the same input sequence. Let $z_B^{(t)}$, $z_P^{(t)}$, and $\hat{z}_P^{(t)}$ denote the token logits generated by the black-box model, the original proxy model, and the adapted proxy model at decoding step $t$, respectively. Prada computes the adaptation offset as the difference between the two proxy outputs:
+\begin{equation}
+\Delta z^{(t)} = \hat{z}_P^{(t)} - z_P^{(t)}.
+\label{eq:prada_offset}
+\end{equation}
+This offset represents the changes in token predictions introduced by fine-tuning on private local data. Prada then applies the offset to the server model's logits:
+\begin{equation}
+z^{(t)} = z_B^{(t)} + \Delta z^{(t)} = z_B^{(t)} + \hat{z}_P^{(t)} - z_P^{(t)}.
+\label{eq:prada_adaptation}
+\end{equation}
+The next token is selected based on the adjusted logits, allowing the black-box model to benefit from local adaptation without updating its parameters. This approach requires the proxy and black-box models to use the same tokenizer, ensuring that their token logits can be directly combined.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/Prada_overview.pdf}
+    \caption{Overview of Prada. The edge device first fine-tunes a lightweight proxy model using private local data. During inference, the difference between the adapted and original proxy model outputs is applied to the server-side black-box model to enable domain-specific adaptation.}
+    \label{fig:prada_overview}
+\end{figure}
+
+A major advantage of Prada is that the private training dataset remains on the edge device throughout the adaptation process. The server only provides model inference through its API and does not receive the local training dataset or the adapted proxy parameters. Meanwhile, the edge device does not require access to the black-box model weights. This design allows both parties to retain control over their data and models. For embodied AI applications, such a mechanism provides a way to improve server-side FMs using local robotic experience without directly uploading sensitive training datasets collected in homes or other private environments.
+
+However, applying offset adaptation independently to every generated token introduces additional communication and inference overhead. To improve efficiency, Prada incorporates speculative decoding into the adaptation process. Instead of requesting one token at a time, the server generates a sequence of draft tokens and their corresponding logits. The edge device then evaluates these tokens using the original and adapted proxy models in parallel and applies the adaptation offset to verify each token. When the adjusted prediction differs from the server's draft, Prada accepts the preceding tokens, replaces the changed token, and discards subsequent draft tokens. This approach reduces repeated server interactions and enables more efficient collaborative inference.
+
+We evaluated Prada using three model families, including Llama, Qwen, and Yi, with black-box models ranging from 3B to 34B parameters and smaller proxy models ranging from 1.5B to 7B parameters. The experiments covered three downstream tasks: question answering, mathematical reasoning, and code generation, evaluated using MMLU, GSM8K, and HumanEval. We compared Prada against direct fine-tuning of the black-box models and Offsite-Tuning to evaluate adaptation performance, computational costs, and communication efficiency.
+
+The results demonstrate that Prada can achieve performance comparable to direct fine-tuning of larger black-box models in many settings. For example, using Llama2-7B as the proxy model, Prada improved the MMLU accuracy of Llama-30B from 60.70\% to 65.86\%, exceeding the 61.10\% achieved by direct fine-tuning of Llama-30B. Similarly, for Llama2-13B, Prada achieved 68.00\% MMLU accuracy compared with 62.18\% for direct fine-tuning. Across the evaluated model families, Prada generally outperformed Offsite-Tuning while maintaining competitive performance against direct black-box model fine-tuning. These results demonstrate that knowledge learned by a smaller proxy model can effectively improve a larger server-side model through collaborative inference.
+
+\begin{table}[t]
+\centering
+\caption{MMLU accuracy (\%) of Prada and baseline adaptation methods on selected Llama models. Prada uses Llama2-7B as the local proxy model.}
+\label{tab:prada_results}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lccc}
+\hline
+Method & Llama-30B & Llama2-13B & Llama-13B \\
+\hline
+Base Model & 60.70 & 59.92 & 43.58 \\
+Black-Box Model SFT & 61.10 & 62.18 & 60.06 \\
+Offsite-Tuning & 55.25 & 60.18 & 50.15 \\
+Prada (Llama2-7B) & \textbf{65.86} & \textbf{68.00} & \textbf{64.57} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+In addition to adaptation performance, Prada significantly reduces the computational requirements for local fine-tuning. Our experiments on a Jetson AGX Orin device with 32 GB of GPU memory demonstrate that Prada can fine-tune lightweight proxy models directly on edge hardware, while fine-tuning larger black-box models is infeasible under the same resource constraints. Across the evaluated models, Prada reduced peak GPU memory usage to less than 16 GB and achieved shorter fine-tuning times compared with baseline approaches. The speculative decoding optimization further reduces communication and inference costs by allowing multiple tokens to be processed in each interaction between the server and edge device.
+
+Overall, Prada demonstrates that large server-side FMs can be adapted using private data and limited computational resources on edge devices without accessing the server model parameters. Its proxy-based adaptation and collaborative inference mechanisms provide a foundation for edge--cloud embodied AI systems, where local robotic data can improve the performance of centralized FMs while remaining on the devices where the data is collected.
+
+\subsection{Efficient Unified VLM on the Edge}
+\label{subsec:unicompress}
+
+VLMs play an important role in embodied AI systems by enabling robots to understand visual inputs and interact with their environments. However, processing visual information introduces significant computational costs, particularly when models need to handle high-resolution images. Unified vision-language models, which support both visual understanding and image generation within a single framework, typically represent images using hundreds or thousands of visual tokens. These long token sequences increase GPU memory consumption, training time, and inference latency. For edge--cloud embodied AI systems, improving VLM efficiency is important not only for deployment on resource-constrained devices but also for reducing the computational cost of training and serving centralized VLMs.
+
+One approach to improving efficiency is visual token compression, which reduces the number of tokens processed by the model. However, existing token compression methods primarily focus on visual understanding tasks, where removing redundant tokens can often preserve model performance. Image generation presents a different challenge because reconstructing images requires more detailed spatial information. Directly reducing the number of visual tokens can therefore significantly degrade generation quality. Furthermore, replacing the original visual tokenizer often requires expensive retraining of the entire model. To address these challenges, I developed UniCompress, a token compression framework that improves training and inference efficiency for unified vision-language understanding and generation without requiring full model retraining.
+
+As illustrated in Figure~\ref{fig:unicompress_overview}, UniCompress introduces three lightweight components into an existing visual tokenizer: a global token extractor, a token compressor, and an autoregressive decompressor. The global token extractor uses learnable query tokens and cross-attention to capture information from the original visual token sequence. The compressor reduces the number of visual tokens through spatial average pooling, while the decompressor reconstructs the original dense visual representation using the compressed tokens and global tokens. This design allows the language model to process shorter visual sequences while preserving the information needed for both understanding and generation.
+
+Given an image represented by $T=H\times W$ visual tokens, the global token extractor uses a small set of learnable query tokens $Q\in\mathbb{R}^{N_g\times d}$ to obtain global tokens:
+\begin{equation}
+G=\mathrm{MHA}(QW_Q,XW_K,XW_V),
+\label{eq:unicompress_global}
+\end{equation}
+where $X\in\mathbb{R}^{T\times d}$ denotes the original visual token sequence and MHA represents multi-head attention. The global tokens capture information from the entire image and provide additional information for reconstruction. Meanwhile, the compressor applies average pooling with a spatial downsampling factor $s$:
+\begin{equation}
+\hat{X}=\mathrm{AvgPool}(X,s),\qquad \tilde{T}=\frac{T}{s^2}.
+\label{eq:unicompress_pooling}
+\end{equation}
+For example, when $s=2$, the number of local visual tokens is reduced from 256 to 64. The compressed tokens and a small number of global tokens are then used as the visual representation for the unified model.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/Unicompress.pdf}
+    \caption{Overview of UniCompress. A global token extractor and spatial compressor reduce the number of visual tokens, while a global-guided autoregressive decompressor reconstructs dense visual representations for image generation.}
+    \label{fig:unicompress_overview}
+\end{figure}
+
+For visual understanding tasks, the language model directly processes the compressed visual tokens together with the global tokens. For image generation, the model predicts discrete indices corresponding to the compressed visual representation. These indices are converted back into continuous features through the original tokenizer's codebook and passed to the decompressor. The decompressor then reconstructs the dense visual tokens required by the image decoder. At each generation step, the decompressor predicts the next dense token based on previously generated tokens and the compressed representation:
+\begin{equation}
+x_t=f_{\mathrm{dec}}\left(X_{<t}^{\mathrm{dense}},\hat{X}^{\mathrm{deq}},\hat{G}\right).
+\label{eq:unicompress_decompress}
+\end{equation}
+By using the global tokens during reconstruction, UniCompress preserves visual information that would otherwise be lost through direct token compression. This is particularly important for image generation, where maintaining spatial structure and image details is necessary for output quality.
+
+UniCompress uses a two-stage training process. In the first stage, the visual tokenizer is trained together with the compression and decompression modules using an image reconstruction objective, while the language model remains frozen. In the second stage, the compressed tokenizer is frozen, and the language model is lightly fine-tuned using shorter visual token sequences for understanding and generation tasks. This approach avoids retraining the entire unified model from scratch and allows UniCompress to be integrated into existing model architectures without modifying the language model backbone.
+
+We evaluated UniCompress on six unified multimodal models, including UniTok, VILA-U, VARGPT, UniFork, OpenUni, and BAGEL. The experiments covered visual understanding benchmarks such as GQA, MME, POPE, TextVQA, MMMU, and MM-Bench, as well as image generation evaluated using FID and CLIP scores. With a compression ratio of $4\times$, UniCompress generally maintained competitive understanding performance while introducing relatively small performance degradation in image generation for several evaluated models. For example, on UniTok, GQA accuracy decreased from 55.71 to 53.07, while FID changed from 16.14 to 16.33. On VILA-U, GQA accuracy decreased from 53.43 to 51.90, while FID changed from 14.80 to 16.37. These results demonstrate that UniCompress can significantly reduce visual token counts while preserving much of the original model performance.
+
+More importantly, UniCompress provides substantial improvements in both training and inference efficiency. As shown in Table~\ref{tab:unicompress_efficiency}, visual token compression consistently reduces training time across the evaluated models, with improvements of up to 15.4\%. The benefits are particularly significant for image generation inference, where reducing the number of autoregressively generated visual tokens directly reduces decoding latency. For example, UniCompress reduces UniTok generation inference time from 32.25 minutes to 18.96 minutes, a reduction of approximately 41.2\%. Similarly, VILA-U generation inference time decreases from 30.15 minutes to 17.55 minutes, corresponding to a 41.8\% reduction. These results show that UniCompress can accelerate both model training and inference while maintaining competitive visual understanding and generation performance.
+
+\begin{table}[t]
+\centering
+\caption{Training and inference efficiency of UniCompress. The compressed models use approximately $4\times$ fewer local visual tokens.}
+\label{tab:unicompress_efficiency}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lcccc}
+\hline
+Model & Understanding Training (h) & Generation Training (h) & Understanding Inference (min) & Generation Inference (min) \\
+\hline
+UniTok & 0.94 & 4.60 & 5.41 & 32.25 \\
+UniTok + UniCompress & \textbf{0.81} & \textbf{3.89} & \textbf{5.25} & \textbf{18.96} \\
+VILA-U & 0.89 & 4.25 & 5.12 & 30.15 \\
+VILA-U + UniCompress & \textbf{0.77} & \textbf{3.65} & \textbf{5.09} & \textbf{17.55} \\
+VARGPT & 1.13 & 5.52 & 5.45 & 38.74 \\
+VARGPT + UniCompress & \textbf{0.92} & \textbf{4.67} & \textbf{5.43} & \textbf{22.71} \\
+UniFork & 0.90 & 4.30 & 5.82 & 29.90 \\
+UniFork + UniCompress & \textbf{0.77} & \textbf{3.70} & \textbf{5.80} & \textbf{17.60} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+Overall, UniCompress demonstrates that reducing visual token counts is an effective way to improve the efficiency of unified vision-language models. Its lightweight design enables integration with existing models, while the global token extraction and decompression mechanisms help preserve performance under compression. For the proposed collaborative embodied AI system, this work provides a potential technique for improving the efficiency of the central server VLM. By reducing the number of visual tokens, UniCompress can help lower the computational cost of server-side VLM training and inference, which is important when a central model needs to serve multiple edge robots. Although UniCompress was evaluated on unified understanding and generation models rather than the proposed embodied AI system, its compression approach provides a useful starting point for improving the efficiency of the central VLM.
+
+\subsection{Data Engine for Embodied AI}
+\label{subsec:aster}
+
+Developing embodied AI systems requires large amounts of training data collected from real-world environments. However, collecting robotic interaction data is expensive and time-consuming, as it often requires physical robots, human operators, and repeated task execution. Simulation provides an alternative by generating training data without requiring every interaction to be performed on a physical robot. Nevertheless, simulated environments often differ from real-world scenes in their layouts, object arrangements, and physical properties, limiting the effectiveness of simulation-based training. To address this issue, Real2Sim methods aim to reconstruct real environments in simulation, allowing robots to train and evaluate their policies in scenes that resemble their actual operating environments.
+
+Existing 3D reconstruction methods mainly focus on recovering scene geometry and visual appearance. Although these methods can produce realistic meshes and point clouds, their outputs are often difficult to use directly in robotic simulators. For example, a reconstructed scene may contain multiple objects represented as a single mesh, without separating the objects that a robot needs to interact with. Furthermore, reconstructed objects may lack physical properties or contain incorrect placements that cause collisions and unstable behavior in simulation. These limitations motivate the development of Real2Sim systems that recover structured, physically executable environments rather than only visually accurate reconstructions.
+
+To address these challenges, I developed Aster, a Real2Sim framework that transforms real-world observations into simulation-ready environments for embodied AI. Aster takes a point cloud reconstructed from a real scene as input and generates a structured simulation environment containing the room layout, individual object assets, and their physical properties. The goal is to efficiently construct environments that can be directly used for robotic training and evaluation, without requiring extensive manual scene construction or per-scene rendering. As illustrated in Figure~\ref{fig:aster_overview}, Aster consists of three main components: simulation-oriented world understanding, progressive instance generation, and simulation-guided physical refinement.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/teaser.pdf}
+    \caption{Overview of Aster. The system transforms real-world observations into structured simulation-ready environments that support robotic training, synthetic data generation, and policy evaluation.}
+    \label{fig:aster_overview}
+\end{figure}
+
+Given an input point cloud $P$, Aster constructs a simulation-ready world represented as
+\begin{equation}
+W = \{L, A, \Phi\},
+\label{eq:aster_world}
+\end{equation}
+where $L$ denotes the room layout, $A=\{a_i\}_{i=1}^{N}$ represents the reconstructed object assets, and $\Phi=\{\phi_i\}_{i=1}^{N}$ contains their physical properties. Each object is represented independently, allowing the simulator to control and manipulate objects during robotic tasks. Aster focuses on preserving the room structure and major objects while allowing smaller task-specific objects to be added separately during downstream data generation.
+
+The first component, simulation-oriented world understanding, uses a 3D VLM to recover the room layout, object locations, semantic descriptions, and physical properties from the input point cloud. Specifically, the model predicts an oriented 3D bounding box for each object, together with its semantic description and simulator attributes:
+\begin{equation}
+\phi_i = (m_i,\mu_i,s_i),
+\label{eq:aster_properties}
+\end{equation}
+where $m_i$, $\mu_i$, and $s_i$ denote the predicted mass, friction coefficient, and mobility state of object $i$, respectively. We build this component upon SpatialLM and extend its training targets with physical attributes generated using a VLM. The resulting model can jointly recover scene structure and predict the information required to configure objects in simulation. These physical attributes serve as estimated simulator parameters rather than direct measurements of real objects.
+
+The second component, progressive instance generation, reconstructs individual object meshes from the recovered scene. Given the predicted object bounding boxes, Aster extracts the corresponding point clouds and uses a conditional 3D generative model to reconstruct their geometry. A major challenge is that neighboring bounding boxes may overlap, causing object point clouds to contain points from other objects. This can produce duplicated geometry and collisions when the reconstructed objects are assembled. To address this issue, Aster reconstructs objects progressively from smaller to larger instances. After reconstructing an object, its corresponding points are removed from the remaining scene point cloud before processing subsequent objects. This process reduces interference between neighboring objects and improves the quality of the reconstructed scene.
+
+The third component, simulation-guided physical refinement, improves the physical stability of the constructed environment. Even when object geometry and locations are recovered, the assembled scene may contain misplaced or unstable objects. Aster executes the reconstructed world in a physics simulator and uses the resulting feedback to identify unstable objects. For these objects, Aster adjusts their placements according to supporting surfaces and updates their mobility states when necessary. The refined environment can then be exported to robotic simulators such as MuJoCo and Isaac Sim for downstream training and evaluation.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/main.pdf}
+    \caption{Aster pipeline. The system recovers scene layouts and object properties, progressively reconstructs individual objects, and uses simulation feedback to correct unstable configurations.}
+    \label{fig:aster_pipeline}
+\end{figure}
+
+We evaluated Aster on scene understanding, object reconstruction, physical consistency, reconstruction efficiency, and downstream robotic learning. For layout recovery, we trained the world understanding model using the SpatialLM dataset and evaluated its performance on ScanNet. For object reconstruction, we evaluated the generated meshes using the 3D-FRONT dataset. Aster achieved an object reconstruction Chamfer Distance of 1.67 and an F-Score of 73.70, compared with 2.38 and 72.25 for ShapeR. These results demonstrate that Aster can recover object geometry while maintaining the structured scene representation required for simulation.
+
+Aster also improves the physical consistency of reconstructed environments. Compared with HoloScene, Aster reduced the collision rate from 25.2\% to 18.0\% and improved the stability rate from 70.6\% to 78.6\%. These improvements are important because robotic policies require environments in which objects can be manipulated and physical interactions can be simulated correctly. In addition, Aster significantly reduces scene construction time. In one evaluated scene, Aster completed reconstruction in 5.5 minutes, compared with 44 minutes for SimRecon combined with ShapeR and 7 hours and 26 minutes for HoloScene. This improvement makes it practical to construct simulation environments from a larger number of real-world scenes.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/baselines.pdf}
+    \caption{Qualitative comparison of scene reconstruction methods. Aster reconstructs the room layout and major objects as separate simulation-ready assets with significantly lower reconstruction time in the illustrated example.}
+    \label{fig:aster_reconstruction}
+\end{figure}
+
+To evaluate whether the reconstructed environments support embodied learning, we generated robotic manipulation data in Aster worlds and trained policies using these data. The evaluation included Pick \& Place, Dish Stacking, and Object Pushing tasks across three reconstructed simulation scenes. We fine-tuned $\pi_{0.5}$ policies using 100 synthetic demonstrations for each task and evaluated their performance in both Aster-generated environments and the corresponding ground-truth simulation scenes. The results showed similar policy performance across the two environments, with an average absolute task success rate difference of only 3.7 percentage points. This demonstrates that Aster preserves the scene structure and object interactions required for robotic policy learning.
+
+We further evaluated Aster in a real robotic manipulation setting using a UFACTORY xArm 850. We first recorded a video of the real workspace and reconstructed it into a simulation environment using Aster. Based on this environment, we automatically generated 200 synthetic training episodes. We then compared a policy trained using 50 real-world demonstrations against another policy trained using the same 50 real demonstrations together with the 200 Aster-generated episodes. In the easier evaluation setting, both policies achieved an 80\% success rate. However, in the more challenging setting, the policy trained only on real data failed all six trials, while the policy trained with additional Aster data succeeded in four out of six trials. These results demonstrate that Aster-generated data can improve real-world robotic performance, particularly for challenging tasks where limited real-world demonstrations are insufficient.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/real.pdf}
+    \caption{Real-world robotic evaluation of Aster. A real workspace is reconstructed into simulation, where additional manipulation data are generated to improve policy training and real-robot task performance.}
+    \label{fig:aster_robot}
+\end{figure}
+
+Overall, Aster provides an efficient approach to transforming real-world scenes into simulation environments for embodied AI training and evaluation. Unlike conventional reconstruction methods, Aster focuses on recovering the scene structure, individual objects, and physical properties required for robotic interaction. Its ability to construct simulation-ready worlds from real observations enables the generation of additional training data without requiring extensive physical robot operations.
+
+For my proposed collaborative embodied AI system, Aster provides an important foundation for developing domain-specific data and improving robotic capabilities in local environments. Edge robots operate in different physical environments, and their local data are essential for understanding the tasks and objects they encounter. Aster provides a potential way to reconstruct these environments and generate additional task-specific interaction data through simulation. Such data can support the development and evaluation of local skills, particularly when real-world task executions are expensive or limited. Combined with the proposed VLM-based agents and edge--server collaboration, this capability can help each edge device improve its skills using experience from its own environment while reducing the need for repeated physical data collection. Extending this approach into a continuous local learning process will be an important direction of my proposed research.
+
+
+\section{Proposed Research}
+\label{sec:proposed}
+
+\subsection{Research Vision and System Overview}
+\label{subsec:system_overview}
+
+Building on my previous research, I propose to develop a collaborative FM system for embodied AI that enables robots to perform real-world tasks and continuously improve their capabilities through local experience and edge--cloud collaboration. The main goal is to support generalizable embodied intelligence while minimizing computational requirements on edge devices. Unlike existing approaches that rely on VLAs or WAMs to generate robot actions, the proposed system uses a VLM for task understanding and decision-making, together with RGB-D perception and robot skills for physical execution. This design separates high-level task planning from low-level robot control, allowing robots to benefit from the general capabilities of a large VLM without running the model locally.
+
+As illustrated in Figure~\ref{fig:system_overview}, the system consists of a central server and multiple edge devices. The central server hosts a VLM and maintains a shared knowledge base and skill library. Each edge device communicates with the central VLM through an API and maintains a local skill library for tasks in its specific environment. The VLM is responsible for understanding task instructions, interpreting visual observations, identifying relevant objects, and determining how to complete tasks using available skills. Edge devices perform local perception, geometric measurements, and robot control. The central server provides general task understanding and planning capabilities, while the local skill libraries support efficient task execution in different environments.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{Figures/system_overview.pdf}
+    \caption{Overview of the proposed collaborative embodied AI system. The central server hosts a VLM and a shared skill library, while multiple edge devices perform robotic tasks and maintain local skill libraries. The system supports local skill improvement and collaborative learning between edge devices and the central server.}
+    \label{fig:system_overview}
+\end{figure}
+
+During task execution, an edge device first collects visual observations through RGB-D cameras and sends the task instruction and relevant visual information to the central VLM. The VLM uses its language and visual understanding capabilities to identify the task requirements and determine the objects and operations involved. Rather than predicting continuous robot actions, the VLM selects appropriate skills or generates a small number of target poses and waypoints. The corresponding geometric information, including object positions, orientations, and dimensions, is obtained through RGB-D measurements and transformed into the robot coordinate system. The local controller then executes the planned movements through predefined robot control interfaces. By relying on measured geometric information and sparse waypoints, the system avoids the need for a VLA or WAM to generate multi-step robot motion predictions.
+
+The system also supports feedback-based task execution. After performing an action, the edge device collects updated observations and execution information, including whether the target poses were reached, whether the object was successfully manipulated, and whether additional actions are required. The VLM can use this information to evaluate task progress and revise its plan when necessary. This allows the robot to handle execution failures and changes in the environment through additional planning and skill execution. Our preliminary implementation and experiments have demonstrated the feasibility of this VLM-based approach for robotic manipulation without task-specific demonstrations or VLA-based action prediction. These initial results provide a foundation for further research on more general robotic tasks and continuous improvement through experience.
+
+Beyond completing individual tasks, the proposed system aims to enable continuous improvement of local robot capabilities. During operation, each edge device will record task instructions, observations, action sequences, execution results, and performance metrics such as task success rate and execution time. These records will provide feedback for the VLM to analyze successful and failed executions, identify limitations in existing skills, and develop improved strategies. The resulting skills and knowledge will be stored in the local skill library and reused in future tasks. Through this process, each device will gradually improve its performance in its own environment without requiring repeated fine-tuning of the central VLM.
+
+To support local learning with limited real-world data, I also plan to integrate simulation-based data generation into the system. Real-world observations collected by edge devices can be used to reconstruct their operating environments in simulation, where additional task executions and training data can be generated. These simulated environments will provide opportunities to test and improve skills before deploying them on physical robots. Combining simulated data with real execution feedback can help improve local skills while reducing the cost of repeated physical interactions.
+
+Finally, the proposed system will support collaborative improvement between the central server and multiple edge devices. As different devices develop local skills, the server will periodically collect and evaluate selected skill updates and task feedback. Since local skills may not generalize to other environments, directly combining all updates may reduce the performance of the central system. Therefore, I plan to investigate learning methods that consider both local task performance and generalization across devices when selecting skills and updating the central VLM. This process will allow knowledge learned from individual environments to contribute to the shared system, while updated central capabilities can benefit other edge devices. The detailed research plans for scalable embodied data, local agent improvement, and edge--cloud collaborative learning are presented in the following sections.
+
+\subsection{Scalable Embodied Data}
+\label{subsec:embodied_data}
+
+A key component of the proposed system is the continuous improvement of robotic skills on edge devices. Unlike centralized FMs trained on large general-purpose datasets, individual robots operate in specific physical environments with different objects, layouts, and task requirements. To improve their performance, these robots need to learn from local experience and continuously update their skills. However, collecting sufficient interaction data through physical robots is expensive and introduces significant safety concerns. Allowing a VLM-based agent to repeatedly explore new actions in a real environment may cause collisions, damage objects, or create unsafe situations for users. Moreover, many task failures require manually resetting the environment before another attempt can be made. These limitations make unrestricted real-world exploration impractical for continuous local learning.
+
+To address this challenge, I propose to construct a digital twin for each edge device's operating environment, providing a simulation environment in which the agent can learn, test, and improve its skills before executing them on the physical robot. Building on Aster, the proposed system will use observations collected by the robot to reconstruct its local environment as a simulation-ready world. The reconstructed environment will preserve the room layout, major objects, and their spatial relationships, while assigning the physical properties required for robotic simulation. This approach allows each device to maintain a virtual representation of its own operating environment rather than relying only on general-purpose simulation datasets.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/embodied_data.pdf}
+    \caption{Proposed simulation-based learning and validation framework for edge robots. Real-world observations are used to construct a local digital twin. The agent explores and learns initial skills in simulation, while subsequent skill updates are evaluated using simulated task success and execution efficiency before deployment to the physical robot.}
+    \label{fig:embodied_data}
+\end{figure}
+
+The first application of the digital twin is initial skill learning in a new environment. When a robot is deployed, it may encounter objects, spatial constraints, and manipulation tasks that differ from those in its existing skill library. Instead of directly exploring these unfamiliar tasks on the physical robot, the system will first generate corresponding tasks in the reconstructed simulation environment. The VLM-based agent can then interact with the digital twin through the same skill and waypoint interfaces used for real-world execution. By observing the outcomes of different action sequences, the agent can identify feasible strategies and improve its initial skills before deploying them on the physical robot. This process aims to reduce the number of physical trials required when adapting to a new environment.
+
+The second application is the validation of local skill updates. During real-world operation, the agent will collect execution feedback and identify skills that require improvement. For example, a skill may repeatedly fail to grasp an object or require unnecessary movements to complete a task. The agent can propose modifications to the skill based on previous execution records. However, directly applying these modifications to the physical robot may introduce new failures or safety risks. Therefore, I plan to use the digital twin to evaluate proposed updates before real-world deployment. The system will execute both the existing and updated skills across multiple simulated trials and compare their performance using metrics such as task success rate, execution time, and execution failures. Updates that demonstrate sufficient improvement and satisfy predefined validation criteria can then be tested on the physical robot. If an update does not meet these requirements, the agent can continue improving it in simulation without affecting the currently deployed skill.
+
+An important research challenge is ensuring that skills evaluated in the digital twin remain effective in the real environment. Although Aster can reconstruct structured and physically executable scenes from real observations, the resulting simulation may not perfectly reproduce the geometry, physical properties, and interactions of real objects. To address this limitation, I plan to investigate how real-world execution feedback can be used to improve the local simulation environment. For example, observed differences between simulated and real task outcomes can help identify inaccurate object properties or scene configurations. I also plan to evaluate skill updates under variations in object positions and physical properties rather than relying on a single simulation configuration. This will help assess whether a skill is robust to differences between the reconstructed environment and the physical world.
+
+The digital twin will therefore serve as an intermediate environment between skill learning and physical execution. It will support initial adaptation when a robot enters a new environment and provide a controlled testing environment for subsequent skill updates. Real-world execution will remain necessary to validate the effectiveness of simulated improvements, but simulation can reduce the number of physical trials and provide additional information before deployment. Through this approach, the proposed system aims to make continuous local skill improvement more practical while reducing the cost and risks associated with real-world robotic exploration.
+
+\subsection{Self-Improving Foundation Model Agents}
+\label{subsec:fm_agents}
+
+A central goal of the proposed system is to enable edge robots to continuously improve their capabilities through experience in their local environments. Although the VLM can understand task instructions and generate robot actions, its initial plans may not always succeed in unfamiliar environments. Different object shapes, spatial constraints, and physical conditions may cause a skill that works in one environment to fail in another. Our preliminary implementation supports feedback-based replanning within individual tasks, but it does not yet systematically use previous experience to improve future task execution. To address this limitation, I plan to develop a self-improving agent that uses execution feedback to update and maintain a local skill library.
+
+The proposed approach builds on RSI, where an agent analyzes its own performance and improves its behavior through repeated execution and evaluation. Rather than modifying the parameters of the VLM or allowing the agent to directly rewrite low-level robot controllers, I plan to focus on improving existing manipulation knowledge and skill configurations. These include task-specific execution strategies, grasping directions, waypoint parameters, and recovery rules. This approach allows the agent to improve its behavior while keeping the underlying geometric measurement and robot control interfaces unchanged.
+
+The local skill improvement process will consist of four steps: failure diagnosis, skill update, simulation-based validation, and deployment. The overall workflow is illustrated in Figure~\ref{fig:skill_evolution}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{Figures/skill_evolution.pdf}
+    \caption{Proposed local skill improvement workflow. The VLM analyzes execution feedback, proposes modifications to existing skills, evaluates the updated skills in a local digital twin, and deploys validated updates to the physical robot.}
+    \label{fig:skill_evolution}
+\end{figure}
+
+First, the agent analyzes execution feedback to identify problems in the current skill. During task execution, the edge device records observations, generated waypoints, execution logs, and task outcomes. When a task fails or requires repeated attempts, the VLM examines this information to determine possible causes, such as inaccurate grasping positions, blocked movements, or inappropriate manipulation strategies. The agent can also identify unnecessary movements in successful executions to improve execution efficiency. This analysis provides a basis for deciding which part of the existing skill should be improved.
+
+Second, the agent proposes a skill update based on the identified problem. For example, if a robot repeatedly fails to grasp an object from a particular direction, the VLM may suggest changing the approach direction or adjusting the grasping position. If an execution requires unnecessary movements, the agent may simplify the waypoint sequence. These modifications can be represented as changes to skill parameters or manipulation instructions stored in the local skill library. To keep the process manageable, I plan to limit each update to a small number of modifications rather than generating an entirely new control program. The original skill will be preserved so that the proposed update can be compared against it and reverted if necessary.
+
+Third, the proposed update is evaluated in the local digital twin developed in Section~\ref{subsec:embodied_data}. The system executes both the original and modified skills in simulation and compares their performance across repeated trials. The main evaluation metrics include task success rate, execution time, and execution failures. To avoid improvements that only work under a specific configuration, the evaluation can also include variations in object positions and task conditions. If the updated skill performs better than the original and satisfies predefined execution constraints, it can be considered for real-world testing. Otherwise, the update is rejected or revised based on the simulation feedback. This step reduces unnecessary physical trials and provides a controlled environment for evaluating skill modifications.
+
+Finally, validated skill updates are tested on the physical robot before being added to the active local skill library. The agent first performs a limited number of real-world trials to determine whether the improvements observed in simulation transfer to the actual environment. If the updated skill demonstrates better performance without introducing new execution problems, it replaces the previous version. Otherwise, the system retains the original skill and records the new execution feedback for future improvement. This process allows the local skill library to improve over time while avoiding direct deployment of untested modifications.
+
+I plan to evaluate this approach using robotic manipulation tasks that require adaptation to different object arrangements and environmental conditions. The main objective is to determine whether skills improved through previous task experience can increase future task success rates and reduce execution time. I will compare the proposed approach against a fixed skill library without updates and an agent that only performs task-level replanning without retaining improvements between tasks. I will also measure the number of physical robot trials required to obtain an effective skill update, examining whether simulation-based validation can reduce the cost of local adaptation.
+
+Through this research, I aim to extend the current VLM-based robotic agent from feedback-based task execution to continuous local skill improvement. By combining execution feedback, VLM-based skill modification, and digital twin validation, the proposed approach will allow edge devices to accumulate useful experience and adapt their skills to specific environments without repeatedly fine-tuning the central FM.
+
+\subsection{Agent-Based Edge--Cloud Collaboration}
+\label{subsec:agent_collaboration}
+
+The proposed self-improving agents can continuously improve their skills using experience collected in local environments. However, these improvements are primarily designed for individual robots and may not generalize to other devices. For example, a manipulation strategy developed for a particular object or workspace may be useful for similar tasks in other environments, while some local modifications may only work under specific physical conditions. If each robot learns independently, useful experience cannot be shared across devices. On the other hand, directly combining all local updates may introduce conflicts between different skills and reduce overall performance. Therefore, an important research challenge is determining how locally learned knowledge can contribute to improving the central VLM and shared skill library.
+
+To address this challenge, I propose an agent-based edge--cloud collaboration framework that allows multiple robots to share and improve their learned capabilities. The framework builds on the local skill improvement process described in Section~\ref{subsec:fm_agents}. Each edge device maintains its own skill library and evaluates skill performance using local execution feedback and its digital twin. The central server collects selected skill updates and evaluation summaries, identifies knowledge that may be useful across different environments, and incorporates validated improvements into the shared system. The main goal is to improve the general capabilities of the central VLM while allowing individual devices to retain skills adapted to their own environments.
+
+One challenge is that different devices may have different tasks and evaluation objectives. For example, one robot may prioritize task success when manipulating fragile objects, while another may emphasize execution speed for repetitive operations. Inspired by my previous research on federated multi-objective RL, I plan to use multiple reward signals to evaluate local skills. These rewards will primarily reflect task success, execution efficiency, and execution failures. Each device can evaluate its skills using the objectives relevant to its environment, while task success provides a common measure for comparing similar skills across devices. This approach allows the collaboration process to account for differences in local requirements rather than treating all skill updates as equally useful.
+
+During each collaboration round, participating devices will identify locally improved skills that have passed the simulation and real-world validation process. Instead of transmitting raw images, videos, or complete local interaction datasets, devices will share selected skill descriptions, relevant parameters, and summarized evaluation results. The server will organize these updates according to task types, such as object grasping, placement, pushing, and articulated object manipulation. Within each task group, the server will compare candidate skills based on their reported performance and select promising updates for further evaluation. This task-aware selection is motivated by the observation that knowledge learned from similar tasks is generally more relevant than knowledge learned from unrelated tasks.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Figures/edge_cloud_collaboration.pdf}
+    \caption{Proposed agent-based edge--cloud collaboration framework. Edge devices evaluate locally improved skills using task rewards and execution feedback. The server groups candidate updates by task type, selects transferable knowledge, and updates the shared skill library. The resulting knowledge is distributed to participating devices for local validation and reuse.}
+    \label{fig:edge_cloud_collaboration}
+\end{figure}
+
+After selecting candidate updates, the central server will incorporate useful strategies into its shared knowledge base and skill library. Since different devices may use different objects and robot configurations, I plan to focus on sharing general manipulation strategies and reusable skill descriptions rather than directly transferring device-specific motion parameters. For example, a strategy for approaching an object from an unobstructed direction may be useful across environments, while the exact grasp coordinates should still be determined using local RGB-D measurements. The central VLM can use the shared knowledge when generating plans for subsequent tasks, while each edge device remains responsible for obtaining the geometric information required for execution.
+
+To further improve the central model, I also plan to investigate whether the collected skill evaluation results can provide useful training signals for server-side RL. Different candidate strategies for similar tasks can be evaluated using task success and execution efficiency, allowing the server to identify actions and planning decisions that lead to better outcomes. These evaluations could support training the central VLM to select more effective skills and generate better task plans. Unlike conventional FL, where clients directly train and aggregate model parameters, the initial implementation will focus on aggregating validated skills and their evaluation results. Server-side model updates will be investigated as a further extension, avoiding the computational burden of training a large VLM independently on every edge device.
+
+An additional challenge is preventing negative transfer when shared knowledge is distributed to different robots. A skill that improves performance in one environment may not be effective in another due to differences in object geometry, robot hardware, or workspace constraints. Therefore, shared skill updates will not automatically replace existing local skills. Instead, each device will evaluate received updates in its own digital twin before deciding whether to adopt them. Updates that fail local validation will be rejected, while successful updates can be incorporated into the local skill library. This mechanism allows the central system to share useful knowledge without requiring every device to adopt the same skills.
+
+I plan to evaluate the proposed collaboration framework using multiple simulated robotic environments with different object arrangements and task distributions. The experiments will compare three settings: independent local skill improvement without collaboration, collaboration through direct sharing of local skill updates, and the proposed task-aware skill selection and validation approach. The main evaluation metrics will include task success rate, execution time, knowledge transfer across environments, and the communication cost between the server and edge devices. I will also examine whether shared skills improve performance on tasks or environments that a device has not previously encountered.
+
+Overall, this research aims to extend local self-improvement into a collaborative learning process across multiple edge robots. By combining local skill evaluation, task-aware knowledge sharing, and server-side learning, the proposed framework will allow useful experience from individual robots to improve the capabilities of the broader system. Together with simulation-based data generation and local skill improvement, this approach provides a path toward embodied AI systems that continuously learn from distributed real-world experience while keeping sensitive local training data on edge devices.
+
+\subsection{Evaluation Plan}
+\label{subsec:evaluation}
+
+I plan to evaluate the proposed system using three robotic manipulation benchmarks, LIBERO, LIBERO-PRO, and LIBERO-plus, together with real-world robotic experiments. Our preliminary experiments have already evaluated the VLM-based agent on these benchmarks, providing an initial validation of robotic task execution without VLA-based action prediction. The remaining evaluation will focus on local skill improvement and collaborative learning across different robots and environments.
+
+First, I will use LIBERO to evaluate the basic task execution capabilities of the VLM-based agent. The evaluation will cover the Spatial, Object, Goal, and Long task suites, which require different levels of object manipulation, spatial understanding, and multi-step planning. I will then use LIBERO-PRO to evaluate robustness under changes in object positions and task configurations, and LIBERO-plus to evaluate performance under broader environmental variations, including camera viewpoints, object layouts, lighting conditions, and sensor noise. The main metrics will include task success rate, execution time, and the number of VLM API calls. These experiments will establish the effectiveness and limitations of the initial robotic agent.
+
+Second, I will conduct real-world manipulation experiments using a physical robotic arm equipped with RGB-D cameras. These experiments will evaluate whether the VLM-based planning and sparse waypoint control framework can operate effectively outside simulation. I will test representative manipulation tasks involving different objects, target positions, and workspace arrangements. To evaluate the proposed local skill improvement mechanism, I will compare task performance before and after skill updates, measuring changes in task success rate, execution time, and the number of physical trials required. I will also examine whether digital twin validation reduces unsuccessful physical executions during skill improvement.
+
+Finally, I plan to evaluate edge--cloud collaboration using multiple robots operating in different physical environments. Each robot will maintain its own local skill library and improve its skills through local execution feedback. The central server will collect selected skill updates and share useful knowledge across devices. I will compare independent local learning with collaborative skill sharing to evaluate whether experience collected by one robot can improve task performance on other robots. The experiments will include different workspace layouts, object configurations, and manipulation tasks to examine the generalization of shared knowledge. The main metrics will include task success rate, execution efficiency, and communication overhead between the server and edge devices. These experiments will provide an end-to-end evaluation of the proposed system, from VLM-based robotic execution to local self-improvement and collaborative learning across multiple physical environments.
+
+
+\section{Research Plan and Conclusion}
+\label{sec:conclusion}
+
+\subsection{Research Timeline}
+\label{subsec:timeline}
+
+I plan to complete the proposed research and my PhD dissertation by May 2027. Since the preliminary VLM-based robotic control framework has already been implemented and evaluated on several manipulation benchmarks, the remaining research will focus on extending the system with simulation-based skill improvement and edge--cloud collaboration. My primary goal is to complete one additional research paper based on these extensions, together with the experimental evaluation and dissertation writing.
+
+\begin{table}[t]
+    \centering
+    \caption{Planned research timeline through May 2027.}
+    \label{tab:research_timeline}
+    \small
+    \begin{tabular}{p{0.24\linewidth}p{0.68\linewidth}}
+        \hline
+        \textbf{Period} & \textbf{Research Activities and Milestones} \\
+        \hline
+        Oct.--Nov. 2026 & Finalize the VLM-based robotic control framework, organize existing LIBERO, LIBERO-PRO, and LIBERO-plus experiments, and complete the initial real-world evaluation. \\
+        Dec. 2026--Jan. 2027 & Integrate digital twin generation into the robotic system and implement the local skill improvement workflow, including feedback analysis, skill modification, and simulation-based validation. \\
+        Feb. 2027 & Evaluate local skill improvement on simulation benchmarks and physical robots. Implement initial edge--cloud skill sharing across different environments. \\
+        Mar. 2027 & Conduct multi-robot and multi-environment experiments, complete ablation studies, and analyze the effectiveness of collaborative skill sharing. \\
+        Apr. 2027 & Complete the experimental analysis, prepare and submit one additional research paper, and incorporate the results into the dissertation. \\
+        May 2027 & Finalize the PhD dissertation, complete the dissertation defense, and graduate. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+The research will proceed incrementally to ensure that each component can be evaluated independently. The initial stage will consolidate the existing robotic control implementation and benchmark experiments. The next stage will focus on local skill improvement using digital twins, followed by collaborative skill sharing across robots. The planned research paper will primarily present the proposed self-improving embodied agent and its experimental evaluation, with edge--cloud collaboration included according to the progress of the multi-robot experiments. This schedule also reserves the final stage for dissertation preparation and defense.
+
+\subsection{Expected Contributions}
+\label{subsec:contributions}
+
+This research aims to develop a collaborative FM system that enables embodied agents to perform real-world tasks and improve their capabilities through local experience and shared knowledge. The expected contributions are summarized as follows.
+
+\begin{enumerate}
+    \item \textbf{VLM-based robotic task execution.} Develop a robotic agent that uses VLM reasoning, RGB-D geometric measurements, and sparse waypoint control to perform manipulation tasks without relying on VLA-based action prediction. The framework will be evaluated on LIBERO, LIBERO-PRO, LIBERO-plus, and physical robotic platforms.
+
+    \item \textbf{Digital twin-assisted local skill improvement.} Develop a simulation-based framework that supports initial skill learning and validates proposed skill updates before physical execution. By combining reconstructed local environments with real-world execution feedback, this approach aims to reduce the cost and risks of robotic exploration.
+
+    \item \textbf{Self-improving embodied agents.} Develop a feedback-driven skill improvement mechanism that allows a VLM-based agent to identify execution failures, propose modifications to existing skills, evaluate candidate updates, and preserve useful improvements in a local skill library.
+
+    \item \textbf{Agent-based edge--cloud collaboration.} Investigate collaborative skill sharing across robots operating in different environments. By selecting and validating transferable skills, the system aims to improve generalization across devices while keeping private local interaction data on edge devices.
+\end{enumerate}
+
+Together, these contributions will establish a foundation for embodied AI systems that combine the general reasoning capabilities of FMs with local robotic execution and continuous adaptation. By connecting VLM-based task planning, simulation-supported skill improvement, and edge--cloud collaboration, this research aims to make embodied FMs more practical for deployment in diverse real-world environments.
 
 \end{document}
